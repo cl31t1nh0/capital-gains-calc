@@ -10,7 +10,7 @@ public class Operation {
     @JsonProperty("operation")
     private String operation;
     @JsonProperty("unit-cost")
-    private double unitCost;
+    private BigDecimal unitCost;
     @JsonProperty("quantity")
     private int quantity;
 }

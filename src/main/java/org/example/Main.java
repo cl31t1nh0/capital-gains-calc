@@ -1,6 +1,8 @@
 package org.example;
 
 import org.example.model.Operation;
+import org.example.model.TaxResult;
+import org.example.service.TaxCalculatorService;
 import org.example.util.InputParser;
 
 import java.io.BufferedReader;
@@ -14,8 +16,8 @@ public class Main {
             String line;
             while ((line = reader.readLine()) != null && !line.trim().isEmpty()) {
                 List<Operation> operations = InputParser.parseOperations(line);
-                // Processar operações aqui
-                System.out.println(operations);
+                List<TaxResult> taxResults = TaxCalculatorService.processOperations(operations);
+                System.out.println(taxResults);
             }
         } catch (Exception e) {
             System.err.println("Erro ao processar entrada: " + e.getMessage());
