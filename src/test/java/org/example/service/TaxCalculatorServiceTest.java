@@ -23,7 +23,10 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Returns zero tax for a single buy operation")
     void returnsZeroTaxForSingleBuy() {
-        Operation buy = new Operation("buy", new BigDecimal("100.00"), 10);
+        Operation buy = new Operation();
+        buy.setOperation("buy");
+        buy.setQuantity(10);
+        buy.setUnitCost(new BigDecimal("100.00"));
         List<TaxResult> results = TaxCalculatorService.processOperations(Collections.singletonList(buy));
         Assertions.assertEquals(1, results.size());
         Assertions.assertEquals(BigDecimal.ZERO.setScale(2), results.get(0).getTax());
@@ -32,8 +35,14 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Returns zero tax for sell below threshold")
     void returnsZeroTaxForSellBelowThreshold() {
-        Operation buy = new Operation("buy", new BigDecimal("100.00"), 10);
-        Operation sell = new Operation("sell", new BigDecimal("150.00"), 10);
+        Operation buy = new Operation();
+        buy.setOperation("buy");
+        buy.setQuantity(10);
+        buy.setUnitCost(new BigDecimal("100.00"));
+        Operation sell = new Operation();
+        sell.setQuantity(10);
+        sell.setUnitCost(new BigDecimal("150.00"));
+        sell.setOperation("sell");
         List<TaxResult> results = TaxCalculatorService.processOperations(Arrays.asList(buy, sell));
         Assertions.assertEquals(2, results.size());
         Assertions.assertEquals(BigDecimal.ZERO.setScale(2), results.get(1).getTax());
@@ -42,8 +51,14 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Calculates tax for sell above threshold with profit")
     void calculatesTaxForSellAboveThresholdWithProfit() {
-        Operation buy = new Operation("buy", new BigDecimal("100.00"), 100);
-        Operation sell = new Operation("sell", new BigDecimal("300.00"), 100);
+        Operation buy = new Operation();
+        buy.setQuantity(100);
+        buy.setUnitCost(new BigDecimal("100.00"));
+        buy.setOperation("buy");
+        Operation sell = new Operation();
+        sell.setQuantity(100);
+        sell.setUnitCost(new BigDecimal("300.00"));
+        sell.setOperation("sell");
         List<TaxResult> results = TaxCalculatorService.processOperations(Arrays.asList(buy, sell));
         Assertions.assertEquals(2, results.size());
         // Profit: (300-100)*100 = 20000, Tax: 20000*0.2 = 4000.00
@@ -53,10 +68,22 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Accumulates loss and applies it to future profits")
     void accumulatesLossAndAppliesToFutureProfits() {
-        Operation buy = new Operation("buy", new BigDecimal("100.00"), 100);
-        Operation sellLoss = new Operation("sell", new BigDecimal("50.00"), 100); // Loss: 5000
-        Operation buy2 = new Operation("buy", new BigDecimal("100.00"), 100);
-        Operation sellProfit = new Operation("sell", new BigDecimal("300.00"), 100); // Profit: 20000, minus 5000 loss = 15000, Tax: 3000
+        Operation buy = new Operation();
+        buy.setQuantity(100);
+        buy.setUnitCost(new BigDecimal("100.00"));
+        buy.setOperation("buy");
+        Operation sellLoss = new Operation(); // Loss: 5000
+        sellLoss.setOperation("sell");
+        sellLoss.setUnitCost(new BigDecimal("50.00"));
+        sellLoss.setQuantity(100);
+        Operation buy2 = new Operation();
+        buy2.setQuantity(100);
+        buy2.setUnitCost(new BigDecimal("100.00"));
+        buy2.setOperation("buy");
+        Operation sellProfit = new Operation(); // Profit: 20000, minus 5000 loss = 15000, Tax: 3000
+        sellProfit.setQuantity(100);
+        sellProfit.setUnitCost(new BigDecimal("300.00"));
+        sellProfit.setOperation("sell");
         List<TaxResult> results = TaxCalculatorService.processOperations(Arrays.asList(buy, sellLoss, buy2, sellProfit));
         Assertions.assertEquals(4, results.size());
         Assertions.assertEquals(BigDecimal.ZERO.setScale(2), results.get(1).getTax());
@@ -66,8 +93,14 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Handles selling more than owned (negative quantity)")
     void handlesSellingMoreThanOwned() {
-        Operation buy = new Operation("buy", new BigDecimal("100.00"), 10);
-        Operation sell = new Operation("sell", new BigDecimal("150.00"), 20);
+        Operation buy = new Operation();
+        buy.setQuantity(10);
+        buy.setUnitCost(new BigDecimal("100.00"));
+        buy.setOperation("buy");
+        Operation sell = new Operation();
+        sell.setQuantity(20);
+        sell.setOperation("sell");
+        sell.setUnitCost(new BigDecimal("150.00"));
         List<TaxResult> results = TaxCalculatorService.processOperations(Arrays.asList(buy, sell));
         Assertions.assertEquals(2, results.size());
         // Should still calculate based on available quantity, negative quantity allowed
@@ -77,10 +110,22 @@ class TaxCalculatorServiceTest {
     @Test
     @DisplayName("Handles multiple consecutive buys and sells")
     void handlesMultipleConsecutiveBuysAndSells() {
-        Operation buy1 = new Operation("buy", new BigDecimal("100.00"), 10);
-        Operation buy2 = new Operation("buy", new BigDecimal("200.00"), 20);
-        Operation sell1 = new Operation("sell", new BigDecimal("250.00"), 15);
-        Operation sell2 = new Operation("sell", new BigDecimal("300.00"), 10);
+        Operation buy1 = new Operation();
+        buy1.setQuantity(10);
+        buy1.setUnitCost(new BigDecimal("100.00"));
+        buy1.setOperation("buy");
+        Operation buy2 = new Operation();
+        buy2.setQuantity(20);
+        buy2.setUnitCost(new BigDecimal("200.00"));
+        buy2.setOperation("buy");
+        Operation sell1 = new Operation();
+        sell1.setQuantity(15);
+        sell1.setUnitCost(new BigDecimal("250.00"));
+        sell1.setOperation("sell");
+        Operation sell2 = new Operation();
+        sell2.setQuantity(10);
+        sell2.setOperation("sell");
+        sell2.setUnitCost(new BigDecimal("300.00"));
         List<TaxResult> results = TaxCalculatorService.processOperations(Arrays.asList(buy1, buy2, sell1, sell2));
         Assertions.assertEquals(4, results.size());
         // Check that all results are present and tax is calculated for each sell
