@@ -13,4 +13,10 @@ public class Operation {
     private BigDecimal unitCost;
     @JsonProperty("quantity")
     private int quantity;
+
+    public Operation(String operation, BigDecimal unitCost, int quantity) {
+        this.operation = operation;
+        this.unitCost = unitCost;
+        this.quantity = quantity;
+    }
 }
